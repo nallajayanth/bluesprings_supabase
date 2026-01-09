@@ -149,6 +149,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
+          overflow: TextOverflow.ellipsis,
         ),
         actions: [
           Padding(
@@ -156,7 +157,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
             child: OutlinedButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.arrow_back, size: 18),
-              label: const Text('Back to List'),
+              label: const Text('Back'), // Shortened text
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
                 side: const BorderSide(color: AppColors.inputBorder),
@@ -165,52 +166,62 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Vehicle Information',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildRow(
-                _buildTextField('Vehicle Number *', _vehicleNumberController),
-                _buildTextField('Owner Name *', _ownerNameController),
-              ),
-              const SizedBox(height: 16),
-              _buildRow(
-                _buildDropdown('Vehicle Type *', _vehicleTypes, _selectedVehicleType, (val) {
-                  setState(() => _selectedVehicleType = val);
-                }),
-                _buildTextField('Flat/Apartment Number *', _flatNumberController),
-              ),
-              const SizedBox(height: 16),
-              _buildRow(
-                _buildTextField('Block Name *', _blockNameController),
-                _buildDropdown('Resident Type *', _residentTypes, _selectedResidentType, (val) {
-                  setState(() => _selectedResidentType = val);
-                }),
-              ),
-              const SizedBox(height: 16),
-              _buildRow(
-                _buildTextField('Parking Slot *', _parkingSlotController),
-                _buildTextField('FastTag ID', _fastTagIdController, isOptional: true),
-              ),
-              const SizedBox(height: 16),
-              
-              // Checkboxes
-              Row(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Check available width. If < 600, use single column for better mobile experience
+          final bool isNarrow = constraints.maxWidth < 600;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
+                  const Text(
+                    'Vehicle Information',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Form Fields
+                  _buildResponsiveRow(
+                    isNarrow,
+                    _buildTextField('Vehicle Number *', _vehicleNumberController),
+                    _buildTextField('Owner Name *', _ownerNameController),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildResponsiveRow(
+                    isNarrow,
+                    _buildDropdown('Vehicle Type *', _vehicleTypes, _selectedVehicleType, (val) {
+                      setState(() => _selectedVehicleType = val);
+                    }),
+                    _buildTextField('Flat/Apartment Number *', _flatNumberController),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildResponsiveRow(
+                    isNarrow,
+                    _buildTextField('Block Name *', _blockNameController),
+                    _buildDropdown('Resident Type *', _residentTypes, _selectedResidentType, (val) {
+                      setState(() => _selectedResidentType = val);
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildResponsiveRow(
+                    isNarrow,
+                    _buildTextField('Parking Slot *', _parkingSlotController),
+                    _buildTextField('FastTag ID', _fastTagIdController, isOptional: true),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Checkboxes
+                  _buildResponsiveRow(
+                    isNarrow,
+                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Authorization Status', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -221,7 +232,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                               onChanged: (val) => setState(() => _isAuthorized = val!),
                               activeColor: AppColors.gradientStart,
                             ),
-                            const Text('Authorized Vehicle'),
+                            const Expanded(child: Text('Authorized Vehicle', overflow: TextOverflow.ellipsis)),
                           ],
                         ),
                         const Padding(
@@ -233,10 +244,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Block Vehicle', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -247,7 +255,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                               onChanged: (val) => setState(() => _isBlocked = val!),
                               activeColor: Colors.red,
                             ),
-                            const Text('Block Vehicle'),
+                            const Expanded(child: Text('Block Vehicle', overflow: TextOverflow.ellipsis)),
                           ],
                         ),
                         const Padding(
@@ -260,71 +268,81 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                       ],
                     ),
                   ),
-                ],
-              ),
-              
-              const SizedBox(height: 40),
+                  
+                  const SizedBox(height: 40),
 
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1976D2), // Blue color from image
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: _isLoading 
-                        ? const SizedBox(
-                            width: 20, 
-                            height: 20, 
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                          )
-                        : const Text(
-                            'Register Vehicle',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1976D2), // Blue color from image
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: AppColors.textSecondary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          child: _isLoading 
+                            ? const SizedBox(
+                                width: 20, 
+                                height: 20, 
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                              )
+                            : const Text(
+                                'Register Vehicle',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
                         ),
                       ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: const BorderSide(color: AppColors.textSecondary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildRow(Widget child1, Widget child2) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: child1),
-        const SizedBox(width: 16),
-        Expanded(child: child2),
-      ],
-    );
+  Widget _buildResponsiveRow(bool isNarrow, Widget child1, Widget child2) {
+    if (isNarrow) {
+      return Column(
+        children: [
+          child1,
+          const SizedBox(height: 16),
+          child2,
+        ],
+      );
+    } else {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: child1),
+          const SizedBox(width: 16),
+          Expanded(child: child2),
+        ],
+      );
+    }
   }
 
   Widget _buildTextField(String label, TextEditingController controller, {bool isOptional = false}) {
@@ -360,7 +378,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.inputBorder),
             ),
-            hintText: isOptional ? 'Optional - for automatic toll payments' : null,
+            hintText: isOptional ? 'Optional' : null, // Shortened hint
             hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
         ),
@@ -398,8 +416,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
               borderSide: const BorderSide(color: AppColors.inputBorder),
             ),
           ),
-          hint: const Text('Select Type'),
-          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          isExpanded: true, // Make dropdown content expanded
+          hint: const Text('Select Type', overflow: TextOverflow.ellipsis),
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
         ),
       ],
     );

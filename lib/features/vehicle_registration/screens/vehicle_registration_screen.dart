@@ -45,28 +45,165 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
     }
   }
 
-  Future<void> _deleteVehicle(int id) async {
+  Future<void> _deleteVehicle(Vehicle vehicle) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this vehicle?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Confirm Delete',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // Warning Box
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1), // Light yellow
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFFECB3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Color(0xFFF57F17)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Warning! This action cannot be undone.',
+                          style: TextStyle(
+                            color: Colors.brown[900],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                const Text(
+                  'Are you sure you want to delete the following vehicle?',
+                  style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                
+                // Details Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDetailRow('Vehicle:', vehicle.vehicleNumber),
+                      const SizedBox(height: 8),
+                      _buildDetailRow('Owner:', vehicle.ownerName),
+                      const SizedBox(height: 8),
+                      _buildDetailRow('Type:', vehicle.vehicleType),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Info Box
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE1F5FE), // Light blue
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFB3E5FC)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: Color(0xFF0288D1)),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'This will also delete all related logs and records for this vehicle.',
+                          style: TextStyle(
+                            color: Color(0xFF01579B),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Buttons
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey[700],
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      icon: const Icon(Icons.delete_outline, size: 18, color: Colors.white),
+                      label: const Text('Delete Vehicle', style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD32F2F), // Red
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+        ),
       ),
     );
 
     if (confirm == true) {
       try {
-        await _vehicleService.deleteVehicle(id);
+        await _vehicleService.deleteVehicle(vehicle.id!);
         _fetchVehicles(); // Refresh list
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -81,6 +218,18 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
         }
       }
     }
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 14, color: Colors.black87),
+        children: [
+          TextSpan(text: '$label ', style: const TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: value),
+        ],
+      ),
+    );
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -239,7 +388,7 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                          onPressed: () => _deleteVehicle(vehicle.id!),
+                                          onPressed: () => _deleteVehicle(vehicle),
                                         ),
                                       ],
                                     )),

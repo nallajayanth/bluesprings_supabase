@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../vehicle_registration/screens/vehicle_registration_screen.dart';
+import '../../reports/screens/movement_reports_screen.dart';
+import '../../reports/screens/visitor_duration_screen.dart';
+import '../../unauthorized/screens/unauthorized_vehicles_screen.dart';
 import '../screens/home_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -84,6 +87,21 @@ class CustomDrawer extends StatelessWidget {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const VehicleRegistrationScreen()),
+            );
+          } else if (title == 'Movement Reports') {
+             Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const MovementReportsScreen()),
+            );
+          } else if (title == 'Visitor Duration') {
+             Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const VisitorDurationScreen()),
+            );
+          } else if (title == 'Unauthorize') {
+             Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const UnauthorizedVehiclesScreen()),
             );
           } else {
              // Other items implementation pending

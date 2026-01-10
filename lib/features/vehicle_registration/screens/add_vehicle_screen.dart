@@ -229,7 +229,14 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                           children: [
                             Checkbox(
                               value: _isAuthorized,
-                              onChanged: (val) => setState(() => _isAuthorized = val!),
+                              onChanged: (val) {
+                                setState(() {
+                                  _isAuthorized = val!;
+                                  if (_isAuthorized) {
+                                    _isBlocked = false;
+                                  }
+                                });
+                              },
                               activeColor: AppColors.gradientStart,
                             ),
                             const Expanded(child: Text('Authorized Vehicle', overflow: TextOverflow.ellipsis)),
@@ -252,7 +259,14 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                           children: [
                             Checkbox(
                               value: _isBlocked,
-                              onChanged: (val) => setState(() => _isBlocked = val!),
+                              onChanged: (val) {
+                                setState(() {
+                                  _isBlocked = val!;
+                                  if (_isBlocked) {
+                                    _isAuthorized = false;
+                                  }
+                                });
+                              },
                               activeColor: Colors.red,
                             ),
                             const Expanded(child: Text('Block Vehicle', overflow: TextOverflow.ellipsis)),

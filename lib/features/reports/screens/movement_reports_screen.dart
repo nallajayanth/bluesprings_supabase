@@ -209,7 +209,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF5F7FA),
-      drawer: const CustomDrawer(),
+      drawer: const CustomDrawer(currentRoute: 'Movement Reports'),
       appBar: AppBar(
         title: const Text(
           'Vehicle Monitoring',

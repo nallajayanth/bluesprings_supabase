@@ -202,7 +202,7 @@ class _VisitorDurationScreenState extends State<VisitorDurationScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF5F7FA),
-      drawer: const CustomDrawer(),
+      drawer: const CustomDrawer(currentRoute: 'Visitor Duration'),
       appBar: AppBar(
         title: const Text(
           'Vehicle Monitoring',

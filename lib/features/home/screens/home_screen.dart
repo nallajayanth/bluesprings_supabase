@@ -152,7 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      drawer: const CustomDrawer(),
+      drawer: const CustomDrawer(currentRoute: 'Dashboard'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

@@ -85,7 +85,7 @@ class _UnauthorizedVehiclesScreenState extends State<UnauthorizedVehiclesScreen>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF5F7FA),
-      drawer: const CustomDrawer(),
+      drawer: const CustomDrawer(currentRoute: 'Unauthorize'),
       appBar: AppBar(
         title: const Text(
           'Vehicle Monitoring',

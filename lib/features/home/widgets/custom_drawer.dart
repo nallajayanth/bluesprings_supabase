@@ -7,7 +7,8 @@ import '../../unauthorized/screens/unauthorized_vehicles_screen.dart';
 import '../screens/home_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({super.key});
+  final String currentRoute;
+  const CustomDrawer({super.key, required this.currentRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +47,11 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
           ),
-          _buildDrawerItem(context, Icons.dashboard_outlined, 'Dashboard', true),
-          _buildDrawerItem(context, Icons.car_rental, 'Vehicle Registration', false),
-          _buildDrawerItem(context, Icons.analytics_outlined, 'Movement Reports', false),
-          _buildDrawerItem(context, Icons.timer_outlined, 'Visitor Duration', false),
-          _buildDrawerItem(context, Icons.do_not_disturb_on_outlined, 'Unauthorize', false),
+          _buildDrawerItem(context, Icons.dashboard_outlined, 'Dashboard', currentRoute == 'Dashboard'),
+          _buildDrawerItem(context, Icons.car_rental, 'Vehicle Registration', currentRoute == 'Vehicle Registration'),
+          _buildDrawerItem(context, Icons.analytics_outlined, 'Movement Reports', currentRoute == 'Movement Reports'),
+          _buildDrawerItem(context, Icons.timer_outlined, 'Visitor Duration', currentRoute == 'Visitor Duration'),
+          _buildDrawerItem(context, Icons.do_not_disturb_on_outlined, 'Unauthorize', currentRoute == 'Unauthorize'),
         ],
       ),
     );

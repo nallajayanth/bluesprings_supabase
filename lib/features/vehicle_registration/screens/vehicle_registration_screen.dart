@@ -277,7 +277,7 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
           ),
         ],
       ),
-      drawer: const CustomDrawer(),
+      drawer: const CustomDrawer(currentRoute: 'Vehicle Registration'),
       body: SingleChildScrollView( // Allow scrolling for the whole page if needed
         child: Padding(
           padding: const EdgeInsets.all(20.0),

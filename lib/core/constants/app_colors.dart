@@ -20,4 +20,14 @@ class AppColors {
   // Correction based on image: The button is Green-Teal gradient.
   static const Color primaryButtonStart = Color(0xFF26A69A);
   static const Color primaryButtonEnd = Color(0xFF1B5E20);
+
+  // Admin Dashboard Colors (Reference)
+  static const Color cardGreen = Color(0xFF00C853);
+  static const Color cardRed = Color(0xFFD50000);
+  static const Color cardOrange = Color(0xFFFFA000);
+  static const Color cardBlue = Color(0xFF2962FF);
+  static const Color cardCyan = Color(0xFF00B8D4);
+  static const Color cardPurple = Color(0xFFAA00FF);
+  static const Color dashboardBackground = Color(0xFFF5F7FA);
+  static const Color navBarBlue = Color(0xFF2962FF); // Top Bar Blue
 }

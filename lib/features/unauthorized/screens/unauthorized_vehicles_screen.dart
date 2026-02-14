@@ -85,32 +85,14 @@ class _UnauthorizedVehiclesScreenState extends State<UnauthorizedVehiclesScreen>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF5F7FA),
-      drawer: const CustomDrawer(currentRoute: 'Unauthorize'),
       appBar: AppBar(
         title: const Text(
-          'Vehicle Monitoring',
+          'Unauthorized Vehicles',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.gradientStart,
         iconTheme: const IconThemeData(color: Colors.white),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.gradientStart, AppColors.gradientEnd],
-            ),
-          ),
-        ),
-         actions: [
-          TextButton.icon(
-             onPressed: () {},
-             icon: const Icon(Icons.person, color: Colors.white),
-             label: const Text('System Administrator', style: TextStyle(color: Colors.white)),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.logout),
-          ),
-        ],
+        automaticallyImplyLeading: false, 
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),

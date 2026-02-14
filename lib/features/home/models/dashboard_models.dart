@@ -11,18 +11,39 @@ class StatData {
 
 class WeeklyData {
   final String day;
-  final int entries;
-  final int exits;
+  final int entry2W;
+  final int entry4W;
+  final int exit2W;
+  final int exit4W;
 
-  WeeklyData({required this.day, required this.entries, required this.exits});
+  WeeklyData({
+    required this.day, 
+    this.entry2W = 0, 
+    this.entry4W = 0, 
+    this.exit2W = 0, 
+    this.exit4W = 0,
+  });
+
+  int get entries => entry2W + entry4W;
+  int get exits => exit2W + exit4W;
 }
 
 class ActivityLog {
   final String time;
+  final String date;
   final String vehicleNo;
+  final String type; // '2W' or '4W'
   final bool isEntry; // true for ENTRY, false for EXIT
+  final String status; // 'Valid' or 'Invalid'
 
-  ActivityLog({required this.time, required this.vehicleNo, required this.isEntry});
+  ActivityLog({
+    required this.time, 
+    required this.date,
+    required this.vehicleNo, 
+    required this.type,
+    required this.isEntry,
+    required this.status,
+  });
 }
 
 class RegisteredVehicle {

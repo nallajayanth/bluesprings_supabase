@@ -30,6 +30,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   // Dropdowns & Checkboxes
   String? _selectedVehicleType;
   String? _selectedResidentType;
+  String? _selectedGroup; // Added Group
   bool _isAuthorized = false;
   bool _isBlocked = false;
 
@@ -39,6 +40,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
   final List<String> _residentTypes = [
     'Owner', 'Tenant', 'Visitor'
+  ];
+
+  final List<String> _groups = [
+    'VIP', 'Staff', 'Guest', 'Resident', '3rd Party'
   ];
 
   @override
@@ -64,6 +69,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     }
     if (_residentTypes.contains(vehicle.residentType)) {
       _selectedResidentType = vehicle.residentType;
+    }
+    if (_groups.contains(vehicle.group)) {
+      _selectedGroup = vehicle.group;
     }
 
     _isAuthorized = vehicle.status == 'Authorized';
@@ -91,6 +99,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       blockName: _blockNameController.text.trim(),
       parkingSlot: _parkingSlotController.text.trim(),
       residentType: _selectedResidentType!,
+      group: _selectedGroup ?? 'Resident', // Default to Resident if not selected
       fastTagId: _fastTagIdController.text.trim().isEmpty 
           ? null 
           : _fastTagIdController.text.trim(),
@@ -207,12 +216,20 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                     _buildTextField('Flat/Apartment Number *', _flatNumberController),
                   ),
                   const SizedBox(height: 16),
-                  _buildResponsiveRow(
+                    _buildResponsiveRow(
                     isNarrow,
                     _buildTextField('Block Name *', _blockNameController),
                     _buildDropdown('Resident Type *', _residentTypes, _selectedResidentType, (val) {
                       setState(() => _selectedResidentType = val);
                     }),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildResponsiveRow(
+                    isNarrow,
+                    _buildDropdown('Group', _groups, _selectedGroup, (val) {
+                      setState(() => _selectedGroup = val);
+                    }),
+                    const SizedBox(), // Spacer for alignment if needed, or remove row
                   ),
                   const SizedBox(height: 16),
                   _buildResponsiveRow(

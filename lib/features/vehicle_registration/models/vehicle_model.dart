@@ -11,6 +11,8 @@ class Vehicle {
   final String parkingSlot;
   final bool isBlocked;
   final String? reason;
+  final String group; // e.g., VIP, Staff, Guest
+  final bool isInside;
 
   Vehicle({
     this.id,
@@ -25,6 +27,8 @@ class Vehicle {
     required this.parkingSlot,
     this.isBlocked = false,
     this.reason,
+    this.group = 'Resident', // Default
+    this.isInside = false,
   });
 
   factory Vehicle.fromJson(Map<String, dynamic> json) {
@@ -36,11 +40,13 @@ class Vehicle {
       flatNumber: json['flat_number'],
       fastTagId: json['fasttag_id'],
       status: json['status'],
-      residentType: json['resident_type'] ?? 'Owner', // Default if missing
+      residentType: json['resident_type'] ?? 'Owner',
       blockName: json['block_name'] ?? '',
       parkingSlot: json['parking_slot'] ?? '',
       isBlocked: json['is_blocked'] ?? false,
       reason: json['reason'],
+      group: json['group_name'] ?? 'Resident', // Mapping from DB 'group_name'
+      isInside: json['is_inside'] ?? false,
     );
   }
 
@@ -57,6 +63,8 @@ class Vehicle {
       'parking_slot': parkingSlot,
       'is_blocked': isBlocked,
       'reason': reason,
+      'group_name': group,
+      'is_inside': isInside,
     };
   }
 }

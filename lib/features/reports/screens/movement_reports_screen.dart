@@ -457,33 +457,13 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF5F7FA),
-      drawer: const CustomDrawer(currentRoute: 'Movement Reports'),
       appBar: AppBar(
         title: const Text(
-          'Vehicle Monitoring',
+          'Movement Reports',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.gradientStart,
+        backgroundColor: AppColors.navBarBlue,
         iconTheme: const IconThemeData(color: Colors.white),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.gradientStart, AppColors.gradientEnd],
-            ),
-          ),
-        ),
-         actions: [
-          TextButton.icon(
-             onPressed: () {},
-             icon: const Icon(Icons.person, color: Colors.white),
-             label: const Text('System Administrator', style: TextStyle(color: Colors.white)),
-          ),
-          IconButton(
-            onPressed: () {},
-             // Placeholder for logout
-            icon: const Icon(Icons.logout),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),

@@ -100,6 +100,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ),
   ];
 
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                _signOut(context); // Perform logout
+              },
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _signOut(BuildContext context) async {
     try {
       await Supabase.instance.client.auth.signOut();
@@ -146,7 +176,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
              label: const Text('System Administrator', style: TextStyle(color: Colors.white)),
           ),
           IconButton(
-            onPressed: () => _signOut(context),
+            onPressed: () => _showLogoutDialog(context),
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
           ),
@@ -154,7 +184,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       drawer: const CustomDrawer(currentRoute: 'Dashboard'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -214,11 +244,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Available width is (screen width - padding).
                 // Spacing is 16.
                 // Item width = (maxWidth - spacing) / 2
-                final itemWidth = (constraints.maxWidth - 16) / 2;
+                final itemWidth = (constraints.maxWidth - 12) / 2;
                 
                 return Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
                     SizedBox(
                       width: itemWidth,

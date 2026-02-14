@@ -27,6 +27,13 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
   DateTime? _toDate;
   final TextEditingController _searchController = TextEditingController();
 
+  // Filter States
+  final List<String> _gateTypes = ['Entry', 'Exit', 'Parking', 'Summary'];
+  final List<String> _vehicleTypes = ['2-Wheeler', '4-Wheeler'];
+  
+  List<String> _selectedGateTypes = [];
+  List<String> _selectedVehicleTypes = [];
+
   // Mock Data
   final List<MovementLog> _allLogs = [
     MovementLog(
@@ -35,6 +42,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
       fastTagId: 'FT1999670874',
       type: 'ENTRY',
       status: 'Authorized',
+      vehicleType: '4-Wheeler',
     ),
     MovementLog(
       dateTime: DateTime(2026, 1, 4, 19, 53, 30),
@@ -42,6 +50,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
       fastTagId: 'FT0644177210',
       type: 'EXIT',
       status: 'Authorized',
+      vehicleType: '4-Wheeler',
     ),
     MovementLog(
       dateTime: DateTime(2026, 1, 4, 18, 20, 10),
@@ -49,6 +58,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
       fastTagId: 'FT1479878430',
       type: 'ENTRY',
       status: 'Authorized',
+      vehicleType: '4-Wheeler',
     ),
     MovementLog(
       dateTime: DateTime(2026, 1, 3, 14, 10, 05),
@@ -56,6 +66,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
       fastTagId: 'FT9988776655',
       type: 'ENTRY',
       status: 'Authorized',
+      vehicleType: '2-Wheeler',
     ),
     MovementLog(
       dateTime: DateTime(2026, 1, 3, 10, 00, 00),
@@ -63,6 +74,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
       fastTagId: 'FT1122334455',
       type: 'EXIT',
       status: 'Unauthorized',
+      vehicleType: '4-Wheeler',
     ),
   ];
 
@@ -81,6 +93,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
   void _filterLogs() {
     setState(() {
       _filteredLogs = _allLogs.where((log) {
+        // Date Logic
         bool dateInRange = true;
         if (_fromDate != null) {
           dateInRange = dateInRange && log.dateTime.isAfter(_fromDate!.subtract(const Duration(days: 1)));
@@ -89,6 +102,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
           dateInRange = dateInRange && log.dateTime.isBefore(_toDate!.add(const Duration(days: 1)));
         }
         
+        // Search Logic
         bool matchesSearch = true;
         if (_searchController.text.isNotEmpty) {
           final query = _searchController.text.toLowerCase();
@@ -96,28 +110,261 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
                           log.fastTagId.toLowerCase().contains(query);
         }
 
-        return dateInRange && matchesSearch;
+        // Gate Type Logic
+        bool matchesGateType = true;
+        if (_selectedGateTypes.isNotEmpty) {
+           matchesGateType = _selectedGateTypes.any((type) => type.toUpperCase() == log.type.toUpperCase());
+        }
+
+        // Vehicle Type Logic
+        bool matchesVehicleType = true;
+        if (_selectedVehicleTypes.isNotEmpty) {
+          matchesVehicleType = _selectedVehicleTypes.contains(log.vehicleType);
+        }
+
+        return dateInRange && matchesSearch && matchesGateType && matchesVehicleType;
       }).toList();
     });
   }
 
-  Future<void> _selectDate(BuildContext context, bool isFrom) async {
-    final DateTime? picked = await showDatePicker(
+  void _openFilterDialog() {
+    showDialog(
       context: context,
-      initialDate: isFrom ? (_fromDate ?? DateTime.now()) : (_toDate ?? DateTime.now()),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: const Color(0xFFE0F2F1), borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.filter_alt, color: Color(0xFF009688)),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text('Filter Reports', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Date Range
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_month, size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        const Text('Date Range', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildDateBox(context, 'From', _fromDate, (date) {
+                          setDialogState(() => _fromDate = date);
+                          setState(() {});
+                        })),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildDateBox(context, 'To', _toDate, (date) {
+                          setDialogState(() => _toDate = date);
+                          setState(() {});
+                        })),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Gate Type
+                    Row(
+                      children: [
+                        const Icon(Icons.door_sliding, size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        const Text('Gate Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: _gateTypes.map((type) {
+                        final isSelected = _selectedGateTypes.contains(type);
+                        return FilterChip(
+                          label: Text(type),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setDialogState(() {
+                              if (selected) {
+                                _selectedGateTypes.add(type);
+                              } else {
+                                _selectedGateTypes.remove(type);
+                              }
+                            });
+                          },
+                          backgroundColor: Colors.grey.shade50,
+                          selectedColor: const Color(0xFF4CAF50), // Green selection
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 13,
+                          ),
+                          checkmarkColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                              color: isSelected ? Colors.transparent : Colors.grey.shade300,
+                            ),
+                          ),
+                          showCheckmark: false,
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Vehicle Type
+                     Row(
+                      children: [
+                        const Icon(Icons.directions_car, size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        const Text('Vehicle Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: _vehicleTypes.map((type) {
+                        final isSelected = _selectedVehicleTypes.contains(type);
+                        return FilterChip(
+                          label: Text(type),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setDialogState(() {
+                              if (selected) {
+                                _selectedVehicleTypes.add(type);
+                              } else {
+                                _selectedVehicleTypes.remove(type);
+                              }
+                            });
+                          },
+                          backgroundColor: Colors.grey.shade50,
+                          selectedColor: const Color(0xFF4CAF50),
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                             fontSize: 13,
+                          ),
+                          checkmarkColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                              color: isSelected ? Colors.transparent : Colors.grey.shade300,
+                            ),
+                          ),
+                          showCheckmark: false,
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              actions: [
+                const Divider(),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          setState(() {
+                             _selectedGateTypes.clear();
+                             _selectedVehicleTypes.clear();
+                             _fromDate = null;
+                             _toDate = null;
+                             _filterLogs();
+                          });
+                          Navigator.pop(context);
+                        },
+                        style: TextButton.styleFrom(
+                           padding: const EdgeInsets.symmetric(vertical: 14),
+                           foregroundColor: Colors.grey.shade700,
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text('Reset Filters', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                           _filterLogs();
+                           Navigator.pop(context);
+                        },
+                         style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF009688), // Teal Apply
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                        ),
+                        child: const Text('Apply Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
-    if (picked != null) {
-      setState(() {
-        if (isFrom) {
-          _fromDate = picked;
-        } else {
-          _toDate = picked;
-        }
-      });
-    }
   }
+
+  Widget _buildDateBox(BuildContext context, String hint, DateTime? date, Function(DateTime) onSelect) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+           context: context,
+           initialDate: date ?? DateTime.now(),
+           firstDate: DateTime(2020),
+           lastDate: DateTime(2030),
+        );
+        if (picked != null) onSelect(picked);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+           color: date != null ? const Color(0xFFE0F2F1) : Colors.grey.shade50,
+           border: Border.all(color: date != null ? const Color(0xFF009688) : Colors.grey.shade300),
+           borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+           children: [
+              Expanded(
+                child: Text(
+                   date != null ? DateFormat('dd-MM-yyyy').format(date) : hint,
+                   style: TextStyle(
+                      color: date != null ? const Color(0xFF00796B) : Colors.grey.shade600,
+                      fontSize: 14,
+                      fontWeight: date != null ? FontWeight.bold : FontWeight.normal,
+                   ),
+                   overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.calendar_today_outlined, size: 18, color: date != null ? const Color(0xFF00796B) : Colors.grey.shade500),
+           ],
+        ),
+      ),
+    );
+  }
+
   
   // CSV/Excel Export
   Future<void> _exportExcel() async {
@@ -125,7 +372,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
     Sheet sheetObject = excel['Sheet1'];
     
     // Headers
-    List<String> headers = ['#', 'Date & Time', 'Vehicle Number', 'FastTag ID', 'Type', 'Status'];
+    List<String> headers = ['#', 'Date & Time', 'Vehicle Number', 'Vehicle Type', 'FastTag ID', 'Gate', 'Status'];
     sheetObject.appendRow(headers.map((e) => TextCellValue(e)).toList());
     
     // Data
@@ -136,6 +383,7 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
             IntCellValue(i + 1),
             TextCellValue(formattedDate),
             TextCellValue(log.vehicleNumber),
+            TextCellValue(log.vehicleType),
             TextCellValue(log.fastTagId),
             TextCellValue(log.type),
             TextCellValue(log.status),
@@ -176,14 +424,14 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
             ),
             pw.Paragraph(text: 'Generated: ${DateFormat('dd MMM yyyy HH:mm').format(DateTime.now())}'),
              pw.Table.fromTextArray(
-                headers: ['#', 'Date & Time', 'Vehicle Number', 'FastTag ID', 'Type', 'Status'],
+                headers: ['#', 'Date & Time', 'Vehicle Number', 'Vehicle Type', 'Gate', 'Status'],
                 data: _filteredLogs.asMap().entries.map((entry) {
                    final log = entry.value;
                    return [
                      (entry.key + 1).toString(),
                      DateFormat('dd-MM-yyyy HH:mm:ss').format(log.dateTime),
                      log.vehicleNumber,
-                     log.fastTagId,
+                     log.vehicleType,
                      log.type,
                      log.status,
                    ];
@@ -253,7 +501,8 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
                          children: [
                              Text(
                                  'Vehicle Movement Reports',
-                                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                                 maxLines: 2,
                                  overflow: TextOverflow.ellipsis,
                              ),
                              Text(
@@ -268,53 +517,66 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
              ),
              const SizedBox(height: 24),
              
-             // Filters Card
+             // Action Buttons
              Card(
                  elevation: 0,
-                 color: const Color(0xFFF0FDF4), // Light greenish background
-                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                 color: Colors.white,
+                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                  child: Padding(
                      padding: const EdgeInsets.all(20.0),
-                     child: Wrap(
-                         spacing: 24,
-                         runSpacing: 16,
-                         crossAxisAlignment: WrapCrossAlignment.end,
-                         children: [
-                             _buildDatePicker('From Date', _fromDate, true),
-                             _buildDatePicker('To Date', _toDate, false),
-                             
-                             ElevatedButton(
-                                 onPressed: _filterLogs,
+                     child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.center,
+                       children: [
+                         Row(
+                           children: [
+                             Expanded(
+                               child: ElevatedButton.icon(
+                                 onPressed: _openFilterDialog,
+                                 icon: const Icon(Icons.filter_list, color: Colors.white, size: 20),
+                                 label: const Text('Filter', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                  style: ElevatedButton.styleFrom(
-                                     backgroundColor: const Color(0xFF1976D2),
-                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                   backgroundColor: const Color(0xFF26A69A), // Teal
+                                   foregroundColor: Colors.white,
+                                   padding: const EdgeInsets.symmetric(vertical: 16),
+                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                   elevation: 0,
                                  ),
-                                 child: const Text('Filter', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                               ),
                              ),
-                             
-                             ElevatedButton.icon(
+                             const SizedBox(width: 16),
+                             Expanded(
+                               child: ElevatedButton.icon(
                                  onPressed: _exportExcel,
-                                 icon: const Icon(Icons.table_chart, color: Colors.white, size: 18),
-                                 label: const Text('XL'),
+                                 icon: const Icon(Icons.table_chart, color: Colors.white, size: 20),
+                                 label: const Text('XL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                  style: ElevatedButton.styleFrom(
-                                     backgroundColor: const Color(0xFF2E7D32), // Excel Green
-                                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                   backgroundColor: const Color(0xFF388E3C), // Green
+                                   foregroundColor: Colors.white,
+                                   padding: const EdgeInsets.symmetric(vertical: 16),
+                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                   elevation: 0,
                                  ),
+                               ),
                              ),
-                             
-                             ElevatedButton.icon(
+                           ],
+                         ),
+                         const SizedBox(height: 16),
+                          SizedBox(
+                            width: 150,
+                            child: ElevatedButton.icon(
                                  onPressed: _exportPdf,
-                                 icon: const Icon(Icons.print, color: Colors.white, size: 18),
-                                 label: const Text('Print'),
+                                 icon: const Icon(Icons.print, color: Colors.white, size: 20),
+                                 label: const Text('Print', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                  style: ElevatedButton.styleFrom(
-                                     backgroundColor: const Color(0xFFD32F2F), // PDF Red
-                                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                   backgroundColor: const Color(0xFFE53935), // Red
+                                   foregroundColor: Colors.white,
+                                   padding: const EdgeInsets.symmetric(vertical: 16),
+                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                   elevation: 0,
                                  ),
                              ),
-                         ],
+                          ),
+                       ],
                      ),
                  ),
              ),
@@ -329,50 +591,42 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
                  child: Padding(
                      padding: const EdgeInsets.all(16.0),
                      child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
                          children: [
                              // Table Header Tools
                              Row(
                                  children: [
-                                     const Icon(Icons.table_chart_outlined, size: 20),
-                                     const SizedBox(width: 8),
-                                     const Flexible(
-                                       child: Text(
-                                           'Detailed Log Report',
-                                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                           overflow: TextOverflow.ellipsis,
-                                       ),
+                                     Container(
+                                       padding: const EdgeInsets.all(8),
+                                       decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
+                                       child: const Icon(Icons.table_chart_outlined, size: 20, color: Colors.blue),
                                      ),
                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Container(
-                                           height: 40,
-                                           decoration: BoxDecoration(
-                                               color: AppColors.inputBackground, // Light grey input
-                                               borderRadius: BorderRadius.circular(8),
-                                           ),
-                                           child: TextField(
-                                              controller: _searchController,
-                                              onChanged: (val) => _filterLogs(),
-                                               decoration: const InputDecoration(
-                                                   hintText: 'Search...',
-                                                   prefixIcon: Icon(Icons.search, size: 20),
-                                                   border: InputBorder.none,
-                                                   contentPadding: EdgeInsets.symmetric(vertical: 10),
-                                               ),
-                                           ),
-                                       ),
-                                      ),
-                                     const SizedBox(width: 8),
-                                     IconButton(
-                                         onPressed: () {},
-                                         icon: const Icon(Icons.download, size: 20),
-                                         tooltip: 'Export Options',
-                                         style: IconButton.styleFrom(
-                                             foregroundColor: AppColors.textSecondary,
-                                         ),
+                                     const Text(
+                                         'Detailed Log Report',
+                                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                      ),
                                  ],
                              ),
+                             const SizedBox(height: 16),
+                             Container(
+                                height: 45,
+                                decoration: BoxDecoration(
+                                    color: AppColors.inputBackground, // Light grey input
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.grey.shade200),
+                                ),
+                                child: TextField(
+                                   controller: _searchController,
+                                   onChanged: (val) => _filterLogs(),
+                                    decoration: const InputDecoration(
+                                        hintText: 'Search Vehicle No or FastTag...',
+                                        prefixIcon: Icon(Icons.search, size: 20, color: Colors.grey),
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                    ),
+                                ),
+                            ),
                              const Padding(
                                  padding: EdgeInsets.symmetric(vertical: 8.0),
                                  child: Divider(),
@@ -383,71 +637,80 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
                                  width: double.infinity,
                                  child: SingleChildScrollView(
                                      scrollDirection: Axis.horizontal,
-                                     child: DataTable(
-                                         headingRowColor: MaterialStateProperty.all(Colors.transparent),
-                                         columnSpacing: 30,
-                                         horizontalMargin: 12,
-                                         columns: const [
-                                             DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
-                                             DataColumn(label: Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold))),
-                                             DataColumn(label: Text('Vehicle Number', style: TextStyle(fontWeight: FontWeight.bold))),
-                                             DataColumn(label: Text('FastTag ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                                             DataColumn(label: Text('Type', style: TextStyle(fontWeight: FontWeight.bold))),
-                                             DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                                         ],
-                                         rows: _filteredLogs.asMap().entries.map((entry) {
-                                            final index = entry.key;
-                                            final log = entry.value;
-                                            return DataRow(
-                                                cells: [
-                                                    DataCell(Text('${index + 1}')),
-                                                    DataCell(
-                                                        Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: [
-                                                                Text(
-                                                                    DateFormat('dd-MM-yyyy').format(log.dateTime),
-                                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                                                ),
-                                                                Text(
-                                                                    DateFormat('HH:mm:ss').format(log.dateTime),
-                                                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                                                                ),
-                                                            ],
-                                                        )
-                                                    ),
-                                                    DataCell(
-                                                        Row(
-                                                            children: [
-                                                                const Icon(Icons.directions_car, size: 16, color: Colors.blue),
-                                                                const SizedBox(width: 8),
-                                                                Text(log.vehicleNumber, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                                            ],
-                                                        )
-                                                    ),
-                                                    DataCell(
-                                                        Container(
-                                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                            decoration: BoxDecoration(
-                                                                color: Colors.cyan,
-                                                                borderRadius: BorderRadius.circular(12),
-                                                            ),
-                                                            child: Text(
-                                                                log.fastTagId,
-                                                                style: const TextStyle(color: Colors.white, fontSize: 11),
-                                                            ),
-                                                        )
-                                                    ),
-                                                    DataCell(
-                                                        _buildTypeBadge(log.type)
-                                                    ),
-                                                    DataCell(
-                                                        _buildStatusBadge(log.status)
-                                                    ),
-                                                ]
-                                            );
-                                         }).toList(),
+                                     child: ConstrainedBox(
+                                       constraints: const BoxConstraints(minWidth: 800),
+                                       child: DataTable(
+                                           headingRowColor: MaterialStateProperty.all(Colors.transparent),
+                                           columnSpacing: 20,
+                                           horizontalMargin: 12,
+                                           columns: const [
+                                               DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
+                                               DataColumn(label: Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold))),
+                                               DataColumn(label: Text('Vehicle No', style: TextStyle(fontWeight: FontWeight.bold))),
+                                               DataColumn(label: Text('Type', style: TextStyle(fontWeight: FontWeight.bold))),
+                                               DataColumn(label: Text('FastTag ID', style: TextStyle(fontWeight: FontWeight.bold))),
+                                               DataColumn(label: Text('Gate', style: TextStyle(fontWeight: FontWeight.bold))),
+                                               DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
+                                           ],
+                                           rows: _filteredLogs.asMap().entries.map((entry) {
+                                              final index = entry.key;
+                                              final log = entry.value;
+                                              return DataRow(
+                                                  cells: [
+                                                      DataCell(Text('${index + 1}')),
+                                                      DataCell(
+                                                          Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              children: [
+                                                                  Text(
+                                                                      DateFormat('dd-MM-yyyy').format(log.dateTime),
+                                                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                                                  ),
+                                                                  Text(
+                                                                      DateFormat('HH:mm:ss').format(log.dateTime),
+                                                                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                                                  ),
+                                                              ],
+                                                          )
+                                                      ),
+                                                      DataCell(
+                                                          Row(
+                                                              children: [
+                                                                  Icon(
+                                                                    log.vehicleType == '2-Wheeler' ? Icons.two_wheeler : Icons.directions_car, 
+                                                                    size: 16, 
+                                                                    color: Colors.blue
+                                                                  ),
+                                                                  const SizedBox(width: 8),
+                                                                  Text(log.vehicleNumber, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                              ],
+                                                          )
+                                                      ),
+                                                       DataCell(Text(log.vehicleType)),
+                                                      DataCell(
+                                                          Container(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors.cyan,
+                                                                  borderRadius: BorderRadius.circular(12),
+                                                              ),
+                                                              child: Text(
+                                                                  log.fastTagId,
+                                                                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                                                              ),
+                                                          )
+                                                      ),
+                                                      DataCell(
+                                                          _buildTypeBadge(log.type)
+                                                      ),
+                                                      DataCell(
+                                                          _buildStatusBadge(log.status)
+                                                      ),
+                                                  ]
+                                              );
+                                           }).toList(),
+                                       ),
                                      ),
                                  ),
                              ),
@@ -461,52 +724,22 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
     );
   }
 
-  Widget _buildDatePicker(String label, DateTime? date, bool isFrom) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54)),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () => _selectDate(context, isFrom),
-          child: Container(
-            width: 150,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  date != null ? DateFormat('dd-MM-yyyy').format(date) : 'dd-mm-yyyy',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                const Icon(Icons.calendar_today, size: 16, color: Colors.black54),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildTypeBadge(String type) {
-    bool isEntry = type == 'ENTRY';
+    bool isEntry = type.toUpperCase() == 'ENTRY';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isEntry ? const Color(0xFF43A047) : const Color(0xFF1E88E5), // Green for Entry, Blue for Exit
-        borderRadius: BorderRadius.circular(4),
+        color: isEntry ? const Color(0xFFE8F5E9) : const Color(0xFFE3F2FD), // Light Green / Light Blue
+        border: Border.all(color: isEntry ? const Color(0xFF4CAF50) : const Color(0xFF2196F3), width: 0.5),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-           Icon(isEntry ? Icons.login : Icons.logout, size: 12, color: Colors.white),
+           Icon(isEntry ? Icons.login : Icons.logout, size: 12, color: isEntry ? const Color(0xFF2E7D32) : const Color(0xFF1565C0)),
            const SizedBox(width: 4),
-           Text(type, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+           Text(type, style: TextStyle(color: isEntry ? const Color(0xFF2E7D32) : const Color(0xFF1565C0), fontSize: 11, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -515,19 +748,12 @@ class _MovementReportsScreenState extends State<MovementReportsScreen> {
   Widget _buildStatusBadge(String status) {
      bool isAuth = status == 'Authorized';
      return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isAuth ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
-        borderRadius: BorderRadius.circular(12),
+        color: isAuth ? const Color(0xFFF1F8E9) : const Color(0xFFFFEBEE),
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-           Icon(isAuth ? Icons.verified : Icons.block, size: 12, color: Colors.white),
-           const SizedBox(width: 4),
-           Text(status, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-        ],
-      ),
+      child: Text(status, style: TextStyle(color: isAuth ? const Color(0xFF33691E) : const Color(0xFFB71C1C), fontSize: 11, fontWeight: FontWeight.bold)),
     );
   }
 }

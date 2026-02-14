@@ -155,20 +155,20 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           ),
           overflow: TextOverflow.ellipsis,
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: OutlinedButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back, size: 18),
-              label: const Text('Back'), // Shortened text
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
-                side: const BorderSide(color: AppColors.inputBorder),
-              ),
-            ),
-          ),
-        ],
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 16.0),
+        //     child: OutlinedButton.icon(
+        //       onPressed: () => Navigator.pop(context),
+        //       icon: const Icon(Icons.arrow_back, size: 18),
+        //       label: const Text('Back'), // Shortened text
+        //       style: OutlinedButton.styleFrom(
+        //         foregroundColor: AppColors.textSecondary,
+        //         side: const BorderSide(color: AppColors.inputBorder),
+        //       ),
+        //     ),
+        //   ),
+        // ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {

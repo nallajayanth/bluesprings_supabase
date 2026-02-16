@@ -34,12 +34,12 @@ class Vehicle {
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     return Vehicle(
       id: json['id'],
-      vehicleNumber: json['vehicle_number'],
-      ownerName: json['owner_name'],
-      vehicleType: json['vehicle_type'],
-      flatNumber: json['flat_number'],
+      vehicleNumber: json['vehicle_number'] ?? 'Unknown',
+      ownerName: json['owner_name'] ?? 'Unknown',
+      vehicleType: json['vehicle_type'] ?? '4-Wheeler', // Default to 4-Wheeler
+      flatNumber: json['flat_number'] ?? '',
       fastTagId: json['fasttag_id'],
-      status: json['status'],
+      status: json['status'] ?? 'Active', // Default status
       residentType: json['resident_type'] ?? 'Owner',
       blockName: json['block_name'] ?? '',
       parkingSlot: json['parking_slot'] ?? '',

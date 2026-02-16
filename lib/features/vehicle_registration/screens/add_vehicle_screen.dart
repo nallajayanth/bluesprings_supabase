@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../models/vehicle_model.dart';
@@ -27,15 +26,16 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   final _fastTagIdController = TextEditingController();
   final _reasonController = TextEditingController();
 
-  // Dropdowns & Checkboxes
+  // Dropdowns
   String? _selectedVehicleType;
   String? _selectedResidentType;
-  String? _selectedGroup; // Added Group
-  bool _isAuthorized = false;
-  bool _isBlocked = false;
+  String? _selectedGroup;
+
+  // Checkboxes replaced by Status Dropdown
+  String? _selectedStatus = 'Authorized'; // Default to Authorized
 
   final List<String> _vehicleTypes = [
-    'Car', 'Motorcycle', 'SUV', 'Truck', 'Van', 'Bus', 'Other'
+    '2-Wheeler', '4-Wheeler'
   ];
 
   final List<String> _residentTypes = [
@@ -44,6 +44,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
   final List<String> _groups = [
     'VIP', 'Staff', 'Guest', 'Resident', '3rd Party'
+  ];
+
+  final List<String> _statusOptions = [
+    'Authorized', 'Unauthorized'
   ];
 
   @override
@@ -74,14 +78,19 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       _selectedGroup = vehicle.group;
     }
 
-    _isAuthorized = vehicle.status == 'Authorized';
-    _isBlocked = vehicle.isBlocked;
+    // Map status
+    if (vehicle.status == 'Authorized') {
+      _selectedStatus = 'Authorized';
+    } else {
+      _selectedStatus = 'Unauthorized';
+    }
   }
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     
-    if (_selectedVehicleType == null || _selectedResidentType == null) {
+    // Validate required dropdowns
+    if (_selectedVehicleType == null || _selectedResidentType == null || _selectedStatus == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select all required dropdowns')),
       );
@@ -89,6 +98,8 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     }
 
     setState(() => _isLoading = true);
+
+    final isAuthorized = _selectedStatus == 'Authorized';
 
     final vehicle = Vehicle(
       id: widget.vehicleToEdit?.id,
@@ -103,9 +114,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       fastTagId: _fastTagIdController.text.trim().isEmpty 
           ? null 
           : _fastTagIdController.text.trim(),
-      status: _isAuthorized ? 'Authorized' : 'Unauthorized',
-      isBlocked: _isBlocked,
-      reason: _isBlocked ? _reasonController.text.trim() : null,
+      status: isAuthorized ? 'Authorized' : 'Unauthorized',
+      isBlocked: !isAuthorized, 
+      reason: !isAuthorized ? _reasonController.text.trim() : null,
     );
 
     try {
@@ -235,79 +246,22 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                   _buildResponsiveRow(
                     isNarrow,
                     _buildTextField('Parking Slot *', _parkingSlotController),
-                    _buildTextField('FastTag ID', _fastTagIdController, isOptional: true),
+                     // Replaced Checkboxes with Status Dropdown
+                     _buildDropdown('Vehicle Status *', _statusOptions, _selectedStatus, (val) {
+                       setState(() => _selectedStatus = val);
+                     }),
                   ),
                   const SizedBox(height: 16),
                   
-                  // Checkboxes
-                  _buildResponsiveRow(
-                    isNarrow,
-                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Authorization Status', style: TextStyle(fontWeight: FontWeight.w600)),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _isAuthorized,
-                              onChanged: (val) {
-                                setState(() {
-                                  _isAuthorized = val!;
-                                  if (_isAuthorized) {
-                                    _isBlocked = false;
-                                  }
-                                });
-                              },
-                              activeColor: AppColors.gradientStart,
-                            ),
-                            const Expanded(child: Text('Authorized Vehicle', overflow: TextOverflow.ellipsis)),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.only(left: 12.0),
-                          child: Text(
-                            'Check if vehicle is authorized for entry',
-                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Block Vehicle', style: TextStyle(fontWeight: FontWeight.w600)),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _isBlocked,
-                              onChanged: (val) {
-                                setState(() {
-                                  _isBlocked = val!;
-                                  if (_isBlocked) {
-                                    _isAuthorized = false;
-                                  }
-                                });
-                              },
-                              activeColor: Colors.red,
-                            ),
-                            const Expanded(child: Text('Block Vehicle', overflow: TextOverflow.ellipsis)),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.only(left: 12.0),
-                          child: Text(
-                            'Check to block vehicle from entry',
-                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // FastTag on its own row or with Status?
+                  // Providing FastTag here since it was moved
+                  _buildTextField('FastTag ID', _fastTagIdController, isOptional: true),
 
-                  // Reason field - only visible if blocked
-                  if (_isBlocked) ...[
+
+                  // Reason field - only visible if Unauthorized
+                  if (_selectedStatus == 'Unauthorized') ...[
                     const SizedBox(height: 16),
-                    _buildTextField('Reason for Blocking *', _reasonController),
+                    _buildTextField('Reason for Unauthorized/Blocking *', _reasonController),
                   ],
                   
                   const SizedBox(height: 40),

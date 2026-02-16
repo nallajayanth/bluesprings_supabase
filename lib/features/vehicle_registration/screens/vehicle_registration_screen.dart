@@ -48,12 +48,9 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
       if (mounted) {
         setState(() {
             _isLoading = false;
-            // Fallback dummy data for demonstration if DB fails or is empty for UI testing
-            if (_vehicles.isEmpty) _vehicles = _getDummyVehicles(); 
              _filterVehicles();
         });
-        // Only show error if it's not just empty
-        if (e.toString().contains('Select')) { // simplistic check
+        if (e.toString().contains('Select')) {
              ScaffoldMessenger.of(context).showSnackBar(
                SnackBar(content: Text('Error loading vehicles: $e')),
              );
@@ -61,28 +58,23 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
       }
     }
   }
-  
-  // Dummy data generator for UI perfection if DB is empty
-  List<Vehicle> _getDummyVehicles() {
-      return [
-          Vehicle(vehicleNumber: 'WB12AB1001', ownerName: 'Ayan', vehicleType: '4W', flatNumber: 'A-101', status: 'Active', residentType: 'Owner', blockName: 'A', parkingSlot: 'P-1', group: 'VIP', isInside: false),
-          Vehicle(vehicleNumber: 'WB12AB1002', ownerName: 'Rahul', vehicleType: '4W', flatNumber: 'B-202', status: 'Active', residentType: 'Tenant', blockName: 'B', parkingSlot: 'P-2', group: 'Staff', isInside: true),
-          Vehicle(vehicleNumber: 'WB12AB1003', ownerName: 'Amit', vehicleType: '2W', flatNumber: 'C-303', status: 'Active', residentType: 'Guest', blockName: 'C', parkingSlot: '-', group: 'Guest', isInside: false),
-          Vehicle(vehicleNumber: 'WB12AB1004', ownerName: 'Riya', vehicleType: '4W', flatNumber: 'A-104', status: 'Active', residentType: 'Owner', blockName: 'A', parkingSlot: 'P-3', group: 'VIP', isInside: false),
-          Vehicle(vehicleNumber: 'WB12AB1006', ownerName: 'Neha', vehicleType: '4W', flatNumber: 'D-404', status: 'Active', residentType: 'Vendor', blockName: 'D', parkingSlot: '-', group: '3rd Party', isInside: true),
-      ];
-  }
 
   void _filterVehicles() {
     setState(() {
       _filteredVehicles = _vehicles.where((vehicle) {
         final matchesSearch = vehicle.vehicleNumber.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             vehicle.ownerName.toLowerCase().contains(_searchQuery.toLowerCase());
-        final matchesType = _selectedType == 'All Types' || vehicle.vehicleType == (_selectedType == '2-Wheeler' ? '2W' : '4W');
-        final matchesGroup = _selectedGroup == 'All Groups' || vehicle.group == _selectedGroup;
+        
+        final matchesType = _selectedType == 'All Types' || 
+            vehicle.vehicleType.toLowerCase() == _selectedType.toLowerCase();
+        
+        final matchesGroup = _selectedGroup == 'All Groups' || 
+            vehicle.group.toLowerCase() == _selectedGroup.toLowerCase();
+        
         final matchesStatus = _selectedStatus == 'All Status' || 
-                              (_selectedStatus == 'Active' && vehicle.status == 'Active') ||
-                              (_selectedStatus == 'Blocked' && vehicle.status == 'Blocked');
+                              (_selectedStatus == 'Authorized' && vehicle.status == 'Authorized') ||
+                              (_selectedStatus == 'Unauthorized' && (vehicle.status == 'Unauthorized' || vehicle.status == 'Blocked' || vehicle.isBlocked));
+                              
         final matchesInside = _selectedInside == 'All' ||
                               (_selectedInside == 'Inside' && vehicle.isInside) ||
                               (_selectedInside == 'Outside' && !vehicle.isInside);
@@ -104,10 +96,6 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
   }
 
   Future<void> _deleteVehicle(Vehicle vehicle) async {
-     // ... (Existing delete logic, slightly updated for UI)
-     // For brevity, keeping it simple or reusing existing logic if method remains.
-     // Implementing a simplified version for this redesign
-      // ...
      final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -143,12 +131,15 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
   Widget build(BuildContext context) {
     // Calculate Stats
     final total = _vehicles.length;
-    final active = _vehicles.where((v) => v.status == 'Active' || v.status == 'Authorized').length;
-    final blocked = _vehicles.where((v) => v.isBlocked || v.status == 'Blocked').length;
+    final authorized = _vehicles.where((v) => v.status == 'Authorized').length;
+    final unauthorized = _vehicles.where((v) => v.status == 'Unauthorized' || v.status == 'Blocked' || v.isBlocked).length;
     final inside = _vehicles.where((v) => v.isInside).length;
     final outside = total - inside;
-    final twoW = _vehicles.where((v) => v.vehicleType == '2W').length;
-    final fourW = _vehicles.where((v) => v.vehicleType == '4W').length;
+    final twoW = _vehicles.where((v) {
+       final t = v.vehicleType.toLowerCase();
+       return t.contains('2-wheeler') || t.contains('motorcycle') || t.contains('bike'); 
+    }).length;
+    final fourW = total - twoW;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -156,7 +147,7 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
       appBar: AppBar(
         title: const Text(
           'Vehicle Management',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
         ),
         backgroundColor: AppColors.navBarBlue,
         elevation: 0,
@@ -172,8 +163,8 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
                   if (result == true) _fetchVehicles();
                },
                style: ElevatedButton.styleFrom(
-                 backgroundColor: const Color(0xFF2962FF), // Blue
-                 foregroundColor: Colors.white,
+                 backgroundColor: Colors.white,
+                 foregroundColor: const Color(0xFF2962FF),
                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                ),
                child: const Text('Add Vehicle'),
@@ -195,10 +186,10 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
                 child: Row(
                   children: [
                     _buildStatCard('Total', total.toString(), Colors.black87),
-                    _buildStatCard('Active', active.toString(), Colors.green),
-                    _buildStatCard('Blocked', blocked.toString(), Colors.red),
+                    _buildStatCard('Authorized', authorized.toString(), Colors.green),
+                    _buildStatCard('Unauthorized', unauthorized.toString(), Colors.red),
                     _buildStatCard('Inside', inside.toString(), Colors.blue),
-                    _buildStatCard('Outside', outside.toString(), Colors.black87), // Or grey
+                    _buildStatCard('Outside', outside.toString(), Colors.black87),
                     _buildStatCard('2W', twoW.toString(), Colors.purple),
                     _buildStatCard('4W', fourW.toString(), Colors.indigo),
                   ],
@@ -262,7 +253,7 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
                     // Row 3: Status & Inside
                     Row(
                       children: [
-                        Expanded(child: _buildCompactDropdown('Status', _selectedStatus, ['All Status', 'Active', 'Blocked'], (val) {
+                        Expanded(child: _buildCompactDropdown('Status', _selectedStatus, ['All Status', 'Authorized', 'Unauthorized'], (val) {
                               setState(() { _selectedStatus = val!; _filterVehicles(); });
                         })),
                         const SizedBox(width: 12),
@@ -388,7 +379,7 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
                      borderRadius: BorderRadius.circular(8),
                    ),
                    child: Icon(
-                      vehicle.vehicleType == '2W' ? Icons.two_wheeler : Icons.directions_car,
+                      _getVehicleIcon(vehicle.vehicleType),
                       color: Colors.blue,
                       size: 20,
                    ),
@@ -407,15 +398,15 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
                  Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                       color: (vehicle.status == 'Active' || vehicle.status == 'Authorized') 
+                       color: (vehicle.status == 'Authorized') 
                           ? Colors.green.withOpacity(0.1) 
                           : Colors.red.withOpacity(0.1),
                        borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                       vehicle.status, 
+                       vehicle.status == 'Authorized' ? 'Authorized' : 'Unauthorized', 
                        style: TextStyle(
-                          color: (vehicle.status == 'Active' || vehicle.status == 'Authorized') ? Colors.green : Colors.red,
+                          color: vehicle.status == 'Authorized' ? Colors.green : Colors.red,
                           fontSize: 11,
                           fontWeight: FontWeight.bold
                        )
@@ -481,5 +472,13 @@ class _VehicleRegistrationScreenState extends State<VehicleRegistrationScreen> {
             : Text(value, style: TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w500)),
        ],
      );
+  }
+
+  IconData _getVehicleIcon(String type) {
+    final t = type.toLowerCase();
+    if (t.contains('2-wheeler') || t.contains('motorcycle') || t.contains('bike') || t.contains('scooter')) {
+      return Icons.two_wheeler;
+    }
+    return Icons.directions_car;
   }
 }

@@ -8,13 +8,18 @@ class VehicleService {
   // Fetch all vehicles
   Future<List<Vehicle>> getVehicles() async {
     try {
+      print('Fetching vehicles from $_tableName...');
       final data = await _supabase
           .from(_tableName)
           .select()
           .order('id', ascending: false); // Newest first
       
+      print('Fetched ${data.length} vehicles.');
+      // print('Data: $data'); // Uncomment to see full data
+      
       return (data as List).map((e) => Vehicle.fromJson(e)).toList();
     } catch (e) {
+      print('Error fetching vehicles: $e');
       throw Exception('Failed to load vehicles: $e');
     }
   }

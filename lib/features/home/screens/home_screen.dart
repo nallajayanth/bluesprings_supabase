@@ -12,6 +12,7 @@ import '../../vehicle_registration/screens/vehicle_registration_screen.dart';
 import '../../unauthorized/screens/unauthorized_vehicles_screen.dart';
 import '../../reports/screens/movement_reports_screen.dart';
 import '../../reports/screens/visitor_duration_screen.dart';
+import '../../scanner/screens/scanner_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -529,7 +530,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: _buildBody(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
+        onTap: (index) {
+          if (index == 2) {
+             Navigator.push(
+               context, 
+               MaterialPageRoute(builder: (_) => const ScannerScreen())
+             );
+          } else {
+             setState(() => _selectedIndex = index);
+          }
+        },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: AppColors.navBarBlue,
@@ -537,10 +547,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'Vehicles'),
+          BottomNavigationBarItem(
+            icon: CircleAvatar(
+              radius: 24,
+              backgroundColor: Color(0xFF6200EE), // Purple color as in design
+              child: Icon(Icons.qr_code_scanner, color: Colors.white, size: 28),
+            ),
+            label: '',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.do_not_disturb_on), label: 'Unauthorized'),
           BottomNavigationBarItem(icon: Icon(Icons.description), label: 'Reports'),
         ],
       ),
+      floatingActionButton: null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -551,8 +571,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 1:
         return const VehicleRegistrationScreen();
       case 2:
-        return const UnauthorizedVehiclesScreen();
+        return const SizedBox.shrink(); // Scanner handled in onTap
       case 3:
+        return const UnauthorizedVehiclesScreen();
+      case 4:
         return _buildReportsMenu();
       default:
         return _buildDashboardContent();

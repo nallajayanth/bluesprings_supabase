@@ -429,14 +429,18 @@ class _VisitorDurationScreenState extends State<VisitorDurationScreen> {
         child: Row(
            mainAxisAlignment: MainAxisAlignment.spaceBetween,
            children: [
-              Text(
-                 date != null ? DateFormat('dd-MM-yyyy').format(date) : label,
-                 style: TextStyle(
-                    color: date != null ? const Color(0xFF00796B) : Colors.grey.shade600,
-                    fontSize: 14,
-                    fontWeight: date != null ? FontWeight.bold : FontWeight.normal,
-                 ),
+              Expanded(
+                child: Text(
+                   date != null ? DateFormat('dd-MM-yyyy').format(date) : label,
+                   style: TextStyle(
+                      color: date != null ? const Color(0xFF00796B) : Colors.grey.shade600,
+                      fontSize: 14,
+                      fontWeight: date != null ? FontWeight.bold : FontWeight.normal,
+                   ),
+                   overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               Icon(Icons.calendar_today, size: 18, color: date != null ? const Color(0xFF00796B) : Colors.grey.shade500),
            ],
         ),

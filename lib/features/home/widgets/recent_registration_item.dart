@@ -49,12 +49,11 @@ class RecentRegistrationItem extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildInfoColumn('OWNER', vehicle.owner),
-              _buildInfoColumn('TYPE', vehicle.type),
-              _buildInfoColumn('FLAT', vehicle.flat),
-              _buildInfoColumn('DATE', vehicle.date),
+              Expanded(child: _buildInfoColumn('OWNER', vehicle.owner)),
+              Expanded(child: _buildInfoColumn('TYPE', vehicle.type)),
+              Expanded(child: _buildInfoColumn('FLAT', vehicle.flat)),
+              Expanded(child: _buildInfoColumn('DATE', vehicle.date)),
             ],
           ),
         ],

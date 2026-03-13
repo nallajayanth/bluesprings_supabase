@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../home/screens/home_screen.dart';
+import '../screens/forgot_password_screen.dart';
 
 class LoginFormSection extends StatefulWidget {
   const LoginFormSection({super.key});
@@ -15,12 +16,11 @@ class LoginFormSection extends StatefulWidget {
 
 class _LoginFormSectionState extends State<LoginFormSection> {
   bool _isPasswordVisible = false;
-  bool _rememberMe = false;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
-  bool _isLogin = true; // Toggle between Login and Sign Up
+  bool _isLogin = true;
 
   Future<void> _handleAuth() async {
     final email = _emailController.text.trim();
@@ -85,78 +85,135 @@ class _LoginFormSectionState extends State<LoginFormSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 20),
+          // Custom Logo Stack
+          FadeInDown(
+            duration: const Duration(milliseconds: 500),
+            child: Align(
+              alignment: Alignment.center,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(
+                      Icons.insert_drive_file_outlined,
+                      size: 28,
+                      color: Color(0xFF1E40AF), // Dark blue
+                    ),
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.shield_outlined,
+                          size: 16,
+                          color: Color(0xFF10B981), // Green
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Titles
           FadeInDown(
             duration: const Duration(milliseconds: 500),
             child: Column(
               children: [
                 Text(
-                  'BlueSprings',
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
+                  'My Access',
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.gradientStart,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _isLogin ? 'Login to continue' : 'Create an account',
+                  'Secure Access Made Simple',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: AppColors.textSecondary,
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 32),
           
-          // Email
+          // Email TextField
           FadeInUp(
             delay: const Duration(milliseconds: 100),
             child: TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
+              style: GoogleFonts.inter(fontSize: 14),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: AppColors.inputBackground,
-                prefixIcon: const Icon(Icons.email, color: Colors.black87),
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
                 ),
-                hintText: 'Email',
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.primaryButtonStart),
+                ),
+                hintText: 'Phone Number or Email',
+                hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
+                contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           
-          // Password
+          // Password TextField
           FadeInUp(
             delay: const Duration(milliseconds: 200),
             child: TextField(
               controller: _passwordController,
               obscureText: !_isPasswordVisible,
+              style: GoogleFonts.inter(fontSize: 14),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: AppColors.inputBackground,
-                prefixIcon: const Icon(Icons.lock, color: Colors.black87),
+                fillColor: Colors.white,
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.black54,
+                    _isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    color: Colors.grey[400],
+                    size: 20,
                   ),
                   onPressed: () {
                     setState(() {
@@ -165,70 +222,69 @@ class _LoginFormSectionState extends State<LoginFormSection> {
                   },
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.primaryButtonStart),
                 ),
                 hintText: 'Password',
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
+                contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
-          // Remember Me (Only show on Login)
+          // Forgot Password
           if (_isLogin)
             FadeInUp(
               delay: const Duration(milliseconds: 300),
-              child: Row(
-                children: [
-                  SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: Checkbox(
-                      value: _rememberMe,
-                      onChanged: (val) {
-                        setState(() {
-                          _rememberMe = val ?? false;
-                        });
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Remember me',
+                  child: Text(
+                    'Forgot Password?',
                     style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2E94E1), // Blue link
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 24),
 
-          // Action Button
+          // Primary Action Button (Login Securely)
           FadeInUp(
             delay: const Duration(milliseconds: 400),
             child: Container(
-              height: 55,
+              height: 50,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(8),
                 gradient: const LinearGradient(
                   colors: [
-                    AppColors.primaryButtonStart,
-                    AppColors.primaryButtonEnd,
+                    Color(0xFF1E40AF), // Dark blue
+                    Color(0xFF10B981), // Green
                   ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryButtonStart.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
               ),
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleAuth,
@@ -236,20 +292,24 @@ class _LoginFormSectionState extends State<LoginFormSection> {
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
                   : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(_isLogin ? Icons.login : Icons.person_add, color: Colors.white),
+                      Icon(_isLogin ? Icons.lock_outline : Icons.person_add_outlined, color: Colors.white, size: 18),
                       const SizedBox(width: 8),
                       Text(
-                        _isLogin ? 'Login' : 'Sign Up',
+                        _isLogin ? 'Login Securely' : 'Sign Up Securely',
                         style: GoogleFonts.inter(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -259,26 +319,128 @@ class _LoginFormSectionState extends State<LoginFormSection> {
               ),
             ),
           ),
+          const SizedBox(height: 24),
           
-          const SizedBox(height: 20),
+          // Divider
+          FadeInUp(
+            delay: const Duration(milliseconds: 450),
+            child: Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey.withValues(alpha: 0.2))),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'OR LOGIN WITH',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ),
+                Expanded(child: Divider(color: Colors.grey.withValues(alpha: 0.2))),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           
+          // Secondary Action Button (Login with OTP)
+          FadeInUp(
+            delay: const Duration(milliseconds: 500),
+            child: OutlinedButton(
+              onPressed: () {
+                // TODO: Implement OTP Login
+              },
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24), // Pill shape for secondary button
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.message_outlined, color: Colors.grey[700], size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Login with OTP',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+
           // Toggle Login/SignUp
           FadeInUp(
-             delay: const Duration(milliseconds: 500),
-             child: TextButton(
-               onPressed: () {
-                 setState(() {
-                   _isLogin = !_isLogin;
-                 });
-               },
-               child: Text(
-                 _isLogin ? 'Don\'t have an account? Sign Up' : 'Already have an account? Login',
-                 style: GoogleFonts.inter(
-                   color: AppColors.textSecondary, 
-                   decoration: TextDecoration.underline,
+             delay: const Duration(milliseconds: 600),
+             child: Row(
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 Text(
+                   _isLogin ? 'New to My Access? ' : 'Already have an account? ',
+                   style: GoogleFonts.inter(
+                     fontSize: 12,
+                     color: Colors.grey[600],
+                   ),
                  ),
-               ),
+                 InkWell(
+                   onTap: () {
+                     setState(() {
+                       _isLogin = !_isLogin;
+                     });
+                   },
+                   child: Text(
+                     _isLogin ? 'Register Now' : 'Login Now',
+                     style: GoogleFonts.inter(
+                       fontSize: 12,
+                       fontWeight: FontWeight.w600,
+                       color: const Color(0xFF2E94E1), // Blue link
+                     ),
+                   ),
+                 ),
+               ],
              ),
+          ),
+          const SizedBox(height: 48),
+          
+          // Footer
+          FadeInUp(
+            delay: const Duration(milliseconds: 700),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Privacy Policy   .   ',
+                      style: GoogleFonts.inter(fontSize: 10, color: Colors.grey[400]),
+                    ),
+                    Text(
+                      'Terms of Service',
+                      style: GoogleFonts.inter(fontSize: 10, color: Colors.grey[400]),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '© 2024 MY GATE SECURITY INC.',
+                  style: GoogleFonts.inter(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                    color: Colors.grey[400],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

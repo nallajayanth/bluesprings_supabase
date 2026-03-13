@@ -66,7 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<ActivityLog> _activities = [
     ActivityLog(time: '21:13:58', date: '11/02/2026', vehicleNo: 'WB12AB1030', type: '4W', isEntry: true, status: 'Valid'),
     ActivityLog(time: '19:39:08', date: '11/02/2026', vehicleNo: 'WB12AB1017', type: '2W', isEntry: false, status: 'Valid'),
-    ActivityLog(time: '18:40:58', date: '11/02/2026', vehicleNo: 'WB12AB1022', type: '2W', isEntry: false, status: 'Invalid'),
+    // ActivityLog(time: '18:40:58', date: '11/02/2026', vehicleNo: 'WB12AB1022', type: '2W', isEntry: false, status: 'Invalid'),
     ActivityLog(time: '18:31:01', date: '11/02/2026', vehicleNo: 'WB12AB1030', type: '4W', isEntry: true, status: 'Valid'),
     ActivityLog(time: '17:13:40', date: '11/02/2026', vehicleNo: 'WB12AB1013', type: '4W', isEntry: false, status: 'Valid'),
   ];
@@ -341,86 +341,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                    ),
                                  ),
                                  DataCell(
-                                   Container(
-                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                     decoration: BoxDecoration(
-                                       color: log.type == '2W' ? AppColors.cardBlue.withOpacity(0.1) : AppColors.cardPurple.withOpacity(0.1),
-                                       borderRadius: BorderRadius.circular(4),
-                                     ),
-                                     child: Row( // Icon + Text
-                                       mainAxisSize: MainAxisSize.min,
-                                       children: [
-                                         Icon(
-                                           log.type == '2W' ? Icons.two_wheeler : Icons.directions_car,
-                                           size: 16,
-                                           color: log.type == '2W' ? AppColors.cardBlue : AppColors.cardPurple,
-                                         ),
-                                         const SizedBox(width: 4),
-                                         Text(
-                                           log.type,
-                                           style: TextStyle(
+                                   FittedBox(
+                                     fit: BoxFit.scaleDown,
+                                     child: Container(
+                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                       decoration: BoxDecoration(
+                                         color: log.type == '2W' ? AppColors.cardBlue.withOpacity(0.1) : AppColors.cardPurple.withOpacity(0.1),
+                                         borderRadius: BorderRadius.circular(4),
+                                       ),
+                                       child: Row( // Icon + Text
+                                         mainAxisSize: MainAxisSize.min,
+                                         children: [
+                                           Icon(
+                                             log.type == '2W' ? Icons.two_wheeler : Icons.directions_car,
+                                             size: 16,
                                              color: log.type == '2W' ? AppColors.cardBlue : AppColors.cardPurple,
-                                             fontWeight: FontWeight.bold,
-                                             fontSize: 12,
                                            ),
-                                         ),
-                                       ],
+                                           const SizedBox(width: 4),
+                                           Text(
+                                             log.type,
+                                             style: TextStyle(
+                                               color: log.type == '2W' ? AppColors.cardBlue : AppColors.cardPurple,
+                                               fontWeight: FontWeight.bold,
+                                               fontSize: 12,
+                                             ),
+                                           ),
+                                         ],
+                                       ),
                                      ),
                                    ),
                                  ),
                                  DataCell(
-                                   Container( // Entry/Exit Badge
-                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                     decoration: BoxDecoration(
-                                       color: log.isEntry ? AppColors.cardGreen.withOpacity(0.1) : AppColors.cardRed.withOpacity(0.1),
-                                       borderRadius: BorderRadius.circular(4),
-                                     ),
-                                     child: Row(
-                                       mainAxisSize: MainAxisSize.min,
-                                       children: [
-                                         Icon(
-                                           log.isEntry ? Icons.arrow_forward : Icons.arrow_back,
-                                           size: 14,
-                                           color: log.isEntry ? AppColors.cardGreen : AppColors.cardRed,
-                                         ),
-                                         const SizedBox(width: 4),
-                                         Text(
-                                           log.isEntry ? 'ENTRY' : 'EXIT',
-                                           style: TextStyle(
+                                   FittedBox(
+                                     fit: BoxFit.scaleDown,
+                                     child: Container( // Entry/Exit Badge
+                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                       decoration: BoxDecoration(
+                                         color: log.isEntry ? AppColors.cardGreen.withOpacity(0.1) : AppColors.cardRed.withOpacity(0.1),
+                                         borderRadius: BorderRadius.circular(4),
+                                       ),
+                                       child: Row(
+                                         mainAxisSize: MainAxisSize.min,
+                                         children: [
+                                           Icon(
+                                             log.isEntry ? Icons.arrow_forward : Icons.arrow_back,
+                                             size: 14,
                                              color: log.isEntry ? AppColors.cardGreen : AppColors.cardRed,
-                                             fontWeight: FontWeight.bold,
-                                             fontSize: 11,
                                            ),
-                                         ),
-                                       ],
+                                           const SizedBox(width: 4),
+                                           Text(
+                                             log.isEntry ? 'ENTRY' : 'EXIT',
+                                             style: TextStyle(
+                                               color: log.isEntry ? AppColors.cardGreen : AppColors.cardRed,
+                                               fontWeight: FontWeight.bold,
+                                               fontSize: 11,
+                                             ),
+                                           ),
+                                         ],
+                                       ),
                                      ),
                                    ),
                                  ),
                                  DataCell(
-                                   Container( // Valid/Invalid Badge
-                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                     decoration: BoxDecoration(
-                                       color: log.status == 'Valid' ? AppColors.cardGreen.withOpacity(0.1) : AppColors.cardRed.withOpacity(0.1),
-                                       borderRadius: BorderRadius.circular(4),
-                                     ),
-                                     child: Row(
-                                       mainAxisSize: MainAxisSize.min,
-                                       children: [
-                                         Icon(
-                                           log.status == 'Valid' ? Icons.check : Icons.close,
-                                           size: 14,
-                                           color: log.status == 'Valid' ? AppColors.cardGreen : AppColors.cardRed,
-                                         ),
-                                         const SizedBox(width: 4),
-                                         Text(
-                                           log.status.toUpperCase(),
-                                           style: TextStyle(
+                                   FittedBox(
+                                     fit: BoxFit.scaleDown,
+                                     child: Container( // Valid/Invalid Badge
+                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                       decoration: BoxDecoration(
+                                         color: log.status == 'Valid' ? AppColors.cardGreen.withOpacity(0.1) : AppColors.cardRed.withOpacity(0.1),
+                                         borderRadius: BorderRadius.circular(4),
+                                       ),
+                                       child: Row(
+                                         mainAxisSize: MainAxisSize.min,
+                                         children: [
+                                           Icon(
+                                             log.status == 'Valid' ? Icons.check : Icons.close,
+                                             size: 14,
                                              color: log.status == 'Valid' ? AppColors.cardGreen : AppColors.cardRed,
-                                             fontWeight: FontWeight.bold,
-                                             fontSize: 11,
                                            ),
-                                         ),
-                                       ],
+                                           const SizedBox(width: 4),
+                                           Text(
+                                             log.status.toUpperCase(),
+                                             style: TextStyle(
+                                               color: log.status == 'Valid' ? AppColors.cardGreen : AppColors.cardRed,
+                                               fontWeight: FontWeight.bold,
+                                               fontSize: 11,
+                                             ),
+                                           ),
+                                         ],
+                                       ),
                                      ),
                                    ),
                                  ),
@@ -505,7 +514,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: _selectedIndex == 0
           ? AppBar(
               title: const Text(
-                'RFID System',
+                'My Access',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
               ),
               backgroundColor: AppColors.navBarBlue,
